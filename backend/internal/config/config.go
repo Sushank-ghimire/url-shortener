@@ -19,12 +19,18 @@ type Config struct {
 
 	// Cors
 	CORSOrigins string
+	FrontendURL string
+
+	// Resend API Key
+	ResendKey string
+	FromEmail string
 }
 
 func LoadConfig() Config {
 	return Config{
 		AppEnv:             getEnv("APP_ENV", "development"),
 		Port:               getEnv("PORT", ":8080"),
+		FrontendURL:        getEnv("FRONTEND_URL", "http://localhost:3000"),
 		DBHost:             getEnv("DB_HOST", "localhost"),
 		DBPort:             getEnv("DB_PORT", "5432"),
 		DBUser:             getEnv("DB_USER", "postgres"),
@@ -35,6 +41,8 @@ func LoadConfig() Config {
 		AccessTokenExpiry:  getEnv("ACCESS_TOKEN_EXPIRY", "15m"),
 		RefreshTokenExpiry: getEnv("REFRESH_TOKEN_EXPIRY", "168h"),
 		CORSOrigins:        getEnv("CORS_ORIGINS", "http://localhost:3000"),
+		ResendKey:          getEnv("RESEND_API_KEY", ""),
+		FromEmail:          getEnv("RESEND_SENDING_EMAIL", ""),
 	}
 }
 
