@@ -8,7 +8,7 @@ run:
 	go run $(MAIN_PATH)
 
 # Run the build server
-serve:
+serve: build
 	./bin/$(APP_NAME)
 
 # Build binary

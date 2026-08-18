@@ -41,3 +41,7 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Data files
+*.mmdb
+Geolite/COPYRIGHT.txt
