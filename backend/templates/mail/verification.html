@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Verify your email</title>
+</head>
+<body>
+    <h1>Welcome, {{.Name}}!</h1>
+
+    <p>
+        Please verify your email address by clicking the button below Link is only valid for 1 hour
+    </p>
+
+    <a href="{{.VerificationURL}}">
+        Verify Email
+    </a>
+
+    <p>If the above link is not working copy and paste this link in your browser {{.VerificationURL}}</p>
+
+    <p>
+        If you didn't create an account, you can ignore this email.
+    </p>
+</body>
+</html>
