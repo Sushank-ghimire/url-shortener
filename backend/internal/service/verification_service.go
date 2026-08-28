@@ -67,7 +67,7 @@ func (r *VerificationService) SendVerificationEmail(
 	}
 
 	verificationURL := fmt.Sprintf(
-		"%s/auth/verify-email?token=%s",
+		"%s/auth/verify?token=%s",
 		r.config.FrontendURL,
 		url.QueryEscape(token),
 	)
