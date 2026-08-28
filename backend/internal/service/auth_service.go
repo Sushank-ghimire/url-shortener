@@ -100,6 +100,10 @@ func (s *AuthService) Login(
 	email := strings.ToLower(strings.TrimSpace(req.Email))
 	user, err := s.userRepo.FindByEmail(ctx, email)
 
+	if user == nil {
+		return nil, repository.ErrUserNotFound
+	}
+
 	if !user.IsVerified {
 		return nil, ErrEmailUnverified
 	}
