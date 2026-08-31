@@ -6,5 +6,5 @@ export const loginFormSchema = z.object({
 });
 
 export const signupFormSchema = loginFormSchema.extend({
-  username: z.string().min(3, "name length is 3 in minimum"),
+  name: z.string().min(3, "name length is 3 in minimum"),
 });
