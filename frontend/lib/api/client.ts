@@ -1,7 +1,7 @@
 import { ApiError, type ApiErrorBody } from "./errors";
 import secureLocalStorage from "react-secure-storage";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 let refreshPromise: Promise<void> | null = null;
 
@@ -68,14 +68,14 @@ export async function api<T>(
 
   const errorBody: ApiErrorBody = await response.json();
 
-  if (response.status === 401 && retry && path !== "/api/v1/auth/refresh") {
+  if (response.status === 401 && retry) {
     try {
       await refreshAccessToken();
       return api<T>(path, options, false);
     } catch {
-      secureLocalStorage.removeItem("access_token");
-      secureLocalStorage.removeItem("refresh_token");
-
+      // secureLocalStorage.removeItem("access_token");
+      // secureLocalStorage.removeItem("refresh_token");
+      console.log("API ERROR: ", errorBody);
       throw new ApiError(401, errorBody);
     }
   }
