@@ -102,3 +102,17 @@ func (r *RefreshTokenRepository) Revoke(
 
 	return err
 }
+
+func (r *RefreshTokenRepository) RevokeAllByUserID(
+	ctx context.Context,
+	userID int64,
+) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`
+			UPDATE refresh_tokens SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL
+		`,
+		userID,
+	)
+	return err
+}
