@@ -288,6 +288,16 @@ func (s *AuthService) Logout(
 	)
 }
 
+func (s *AuthService) LogoutAll(
+	ctx context.Context,
+	userID int64,
+) error {
+	return s.refreshTokenRepo.RevokeAllByUserID(
+		ctx,
+		userID,
+	)
+}
+
 func generateRefreshToken() (string, error) {
 	// 32 random bytes = 256 bits of entropy.
 	tokenBytes := make([]byte, 32)
