@@ -202,3 +202,26 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 	}
 	utils.Success(c, http.StatusOK, "user fetched successfully", user)
 }
+
+// POST /api/v1/auth/logout-all
+func (h *AuthHandler) LogoutAll(c *gin.Context) {
+	userID, ok := getUserID(c)
+	if !ok {
+		utils.Error(
+			c,
+			http.StatusUnauthorized,
+			"authentication required",
+		)
+		return
+	}
+	err := h.authService.LogoutAll(
+		c.Request.Context(),
+		userID,
+	)
+
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, "failed to logout from all devices")
+		return
+	}
+	utils.Success(c, http.StatusOK, "logged out from all devices successfully", nil)
+}
