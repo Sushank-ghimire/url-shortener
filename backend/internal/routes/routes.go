@@ -42,18 +42,18 @@ func setupAuthRoutes(
 	jwtService *auth.JWTService,
 ) {
 	auth := api.Group("/auth")
-
-	// Public
-	auth.POST("/register", h.Register)
-	auth.POST("/login", h.Login)
-
+	{
+		auth.POST("/register", h.Register)
+		auth.POST("/login", h.Login)
+	}
 	protected := auth.Group("")
 	protected.Use(middleware.AuthRequired(jwtService))
-
-	// Protected
-	protected.POST("/refresh", h.Refresh)
-	protected.POST("/logout", h.Logout)
-	protected.GET("/me", h.GetMe)
+	{
+		protected.POST("/refresh", h.Refresh)
+		protected.POST("/logout", h.Logout)
+		protected.POST("/logout-all", h.LogoutAll)
+		protected.GET("/me", h.GetMe)
+	}
 }
 
 func setupVerificationRoutes(
@@ -61,8 +61,10 @@ func setupVerificationRoutes(
 	h *handler.VerificationHandler,
 ) {
 	email := api.Group("/email")
+	{
 
-	email.POST("/verify", h.VerifyEmail)
+		email.POST("/verify", h.VerifyEmail)
+	}
 }
 
 func setupURLRoutes(
@@ -75,11 +77,19 @@ func setupURLRoutes(
 
 	// Public
 	url.GET("/:id", urlHandler.GetURLByID)
+	url.GET("/:shortcode/resolve", urlHandler.ResolveURL)
 
 	// Protected
 	protected := url.Group("")
 	protected.Use(middleware.AuthRequired(jwtService))
+	{
+		protected.POST("/", urlHandler.ShortURL)
 
-	protected.POST("/", urlHandler.ShortURL)
-	protected.GET("/:id/analytics", analyticsHandler.GetAnalytics)
+		analytics := protected.Group("/:id/analytics")
+		{
+			analytics.GET("", analyticsHandler.GetAnalytics)
+			analytics.GET("/summary", analyticsHandler.GetSummary)
+			analytics.GET("/timeline", analyticsHandler.GetTimeline)
+		}
+	}
 }
