@@ -77,7 +77,9 @@ func (h *URLHandler) ShortURL(c *gin.Context) {
 		c,
 		http.StatusCreated,
 		"url shorted successfully",
-		url,
+		gin.H{
+			"url": url,
+		},
 	)
 }
 
@@ -124,16 +126,6 @@ func (h *URLHandler) GetURLByID(c *gin.Context) {
 		return
 	}
 
-	analytics := buildAnalytics(
-		c,
-		url.ID,
-	)
-
-	_ = h.analyticsService.Create(
-		c.Request.Context(),
-		analytics,
-	)
-
 	c.Redirect(http.StatusFound, url.LongURL)
 }
 
@@ -176,10 +168,25 @@ func (h *URLHandler) ResolveURL(c *gin.Context) {
 		)
 		return
 	}
+
+	analytics := buildAnalytics(
+		c,
+		url.ID,
+	)
+
+	_ = h.analyticsService.Create(
+		c.Request.Context(),
+		analytics,
+	)
 	c.JSON(
 		http.StatusOK,
 		gin.H{
-			"exists": true,
+			"success": true,
+			"data": gin.H{
+				"exists": true,
+			"long_url": url.LongURL,
+			},
+			"message": "url resolved successfully!",
 		},
 	)
 }
