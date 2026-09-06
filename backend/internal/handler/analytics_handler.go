@@ -84,7 +84,7 @@ func (h *AnalyticsHandler) GetAnalytics(
 		)
 		return
 	}
-	analytics, err := h.analyticsService.Get(
+	analytics, total, err := h.analyticsService.GetAnalytics(
 		c.Request.Context(),
 		userID,
 		urlID,
@@ -117,7 +117,108 @@ func (h *AnalyticsHandler) GetAnalytics(
 			"pagination": gin.H{
 				"limit":  pagination.Limit,
 				"offset": pagination.Offset,
+				"total":  total,
 			},
+		},
+	)
+}
+
+func (h *AnalyticsHandler) GetSummary(c *gin.Context) {
+	urlID, err := strconv.ParseInt(
+		c.Param("id"),
+		10,
+		64,
+	)
+	if err != nil {
+		utils.Error(
+			c,
+			http.StatusBadRequest,
+			"invalid url id",
+		)
+		return
+	}
+
+	userID, ok := getUserID(c)
+	if !ok {
+		utils.Error(
+			c,
+			http.StatusUnauthorized,
+			"analytics access denied",
+		)
+		return
+	}
+
+	result, err := h.analyticsService.GetSummary(
+		c.Request.Context(),
+		userID,
+		urlID,
+	)
+
+	if err != nil {
+		utils.Error(
+			c,
+			http.StatusInternalServerError,
+			"failed to fetch analytics summary",
+		)
+		return
+	}
+	utils.Success(
+		c,
+		http.StatusOK,
+		"summary fetched successfully!",
+		gin.H{
+			"result": result,
+		},
+	)
+}
+
+func (h *AnalyticsHandler) GetTimeline(c *gin.Context) {
+	urlID, err := strconv.ParseInt(
+		c.Param("id"),
+		10,
+		64,
+	)
+	if err != nil {
+		utils.Error(
+			c,
+			http.StatusBadRequest,
+			"invalid url id",
+		)
+		return
+	}
+
+	period := c.DefaultQuery("period", "30d")
+
+	userID, ok := getUserID(c)
+	if !ok {
+		utils.Error(
+			c,
+			http.StatusUnauthorized,
+			"analytics access denied",
+		)
+		return
+	}
+
+	result, err := h.analyticsService.GetTimeline(
+		c.Request.Context(),
+		userID,
+		urlID,
+		period,
+	)
+	if err != nil {
+		utils.Error(
+			c,
+			http.StatusBadRequest,
+			err.Error(),
+		)
+		return
+	}
+	utils.Success(
+		c,
+		http.StatusOK,
+		"timiline fetched successfully!",
+		gin.H{
+			"result": result,
 		},
 	)
 }
