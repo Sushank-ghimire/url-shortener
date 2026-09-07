@@ -8,7 +8,7 @@ let refreshPromise: Promise<void> | null = null;
 async function refreshAccessToken(): Promise<void> {
   const refreshToken = secureLocalStorage.getItem("refresh_token");
 
-  if (!refreshToken) {
+  if (!refreshToken || typeof refreshToken !== "string") {
     throw new ApiError(401, {
       message: "No refresh token available",
     });
@@ -27,15 +27,27 @@ async function refreshAccessToken(): Promise<void> {
           }),
         });
 
+        const body = await response.json();
+
+        console.log("REFRESH RESPONSE:", body);
+
         if (!response.ok) {
-          throw new ApiError(response.status, await response.json());
+          throw new ApiError(response.status, body);
         }
 
-        const data = await response.json();
-        secureLocalStorage.setItem("access_token", data.access_token);
+        const accessToken = body.data?.access_token;
+        const newRefreshToken = body.data?.refresh_token;
 
-        if (data.refresh_token) {
-          secureLocalStorage.setItem("refresh_token", data.refresh_token);
+        if (!accessToken) {
+          throw new ApiError(401, {
+            message: "Refresh response does not contain access token",
+          });
+        }
+
+        secureLocalStorage.setItem("access_token", accessToken);
+
+        if (newRefreshToken) {
+          secureLocalStorage.setItem("refresh_token", newRefreshToken);
         }
       } finally {
         refreshPromise = null;
@@ -57,7 +69,11 @@ export async function api<T>(
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...(accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : {}),
       ...options.headers,
     },
   });
@@ -68,15 +84,19 @@ export async function api<T>(
 
   const errorBody: ApiErrorBody = await response.json();
 
+  // Access token expired
   if (response.status === 401 && retry) {
     try {
       await refreshAccessToken();
+
       return api<T>(path, options, false);
-    } catch {
-      // secureLocalStorage.removeItem("access_token");
-      // secureLocalStorage.removeItem("refresh_token");
-      console.log("API ERROR: ", errorBody);
-      throw new ApiError(401, errorBody);
+    } catch (error) {
+      secureLocalStorage.removeItem("access_token");
+      secureLocalStorage.removeItem("refresh_token");
+
+      throw error instanceof ApiError
+        ? error
+        : new ApiError(401, { message: "Authentication failed" });
     }
   }
 
