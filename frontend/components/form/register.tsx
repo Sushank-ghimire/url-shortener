@@ -17,24 +17,37 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useRegister } from "@/lib/query/actions/auth/hooks/use-register";
+import { toast } from "sonner";
 
 export default function SignupFrom() {
+  const registerMutation = useRegister();
+
   const form = useForm({
     defaultValues: {
       email: "",
       password: "",
-      username: "",
+      name: "",
     },
     validators: {
       onSubmit: signupFormSchema,
     },
     onSubmit: async ({ value }) => {
       try {
-        console.log(value);
-      } catch (err) {
-        console.log(err);
-      } finally {
-        form.reset();
+        await registerMutation.mutateAsync(value, {
+          onSuccess: (data) => {
+            if (data.success) {
+              toast.success("account created successfully!", {
+                description: "verify your email to get started",
+              });
+              form.reset();
+            }
+          },
+        });
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Invalid email or password.",
+        );
       }
     },
   });
@@ -56,7 +69,7 @@ export default function SignupFrom() {
         <CardContent>
           <FieldGroup>
             <form.Field
-              name="username"
+              name="name"
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -72,7 +85,7 @@ export default function SignupFrom() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
-                      placeholder="John Doe"
+                      placeholder="Sushank Ghimire"
                     />
 
                     {isInvalid && (
