@@ -17,8 +17,16 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useLogin } from "@/lib/query/actions/auth/hooks/use-login";
+import { toast } from "sonner";
+import secureLocalStorage from "react-secure-storage";
+import { useRouter } from "next/navigation";
 
 export default function LoginFrom() {
+  const loginMutation = useLogin();
+
+  const router = useRouter();
+
   const form = useForm({
     defaultValues: {
       email: "",
@@ -29,11 +37,21 @@ export default function LoginFrom() {
     },
     onSubmit: async ({ value }) => {
       try {
-        console.log(value);
-      } catch (err) {
-        console.log(err);
-      } finally {
+        await loginMutation.mutateAsync(value, {
+          onSuccess: ({ data, success }) => {
+            if (success) {
+              secureLocalStorage.setItem("refresh_token", data.refresh_token);
+              secureLocalStorage.setItem("access_token", data.access_token);
+              toast.success("Login successful");
+              router.replace("/user/dashboard");
+            }
+          },
+        });
         form.reset();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Invalid email or password.",
+        );
       }
     },
   });
