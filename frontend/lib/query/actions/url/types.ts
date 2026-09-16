@@ -32,7 +32,9 @@ export type URL = {
 export type ShortURLResponse = {
   success: boolean;
   message: string;
-  data: URL;
+  data: {
+    url: URL
+  };
 };
 
 export type ShortURLRequest = {
