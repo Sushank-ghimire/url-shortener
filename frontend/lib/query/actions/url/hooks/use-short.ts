@@ -5,5 +5,5 @@ export function useShortURL() {
   return useMutation({
     mutationKey: ["short-url"],
     mutationFn: createShortURL,
-  })
+  });
 }
