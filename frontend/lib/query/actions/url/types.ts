@@ -12,9 +12,6 @@ export type RedirectRequest = {
 
 // Resolve URL Types
 export type ResolveRequest = RedirectRequest;
-export type ResolveResponse = {
-  exists: boolean;
-};
 
 // URL types
 export type URL = {
@@ -33,7 +30,7 @@ export type ShortURLResponse = {
   success: boolean;
   message: string;
   data: {
-    url: URL
+    url: URL;
   };
 };
 
@@ -43,3 +40,12 @@ export type ShortURLRequest = {
   long_url: string;
   expires_at?: string | null;
 };
+
+export interface ResolveResponse {
+  success: boolean;
+  data: {
+    exists: boolean;
+    long_url: string;
+  };
+  message: string;
+}

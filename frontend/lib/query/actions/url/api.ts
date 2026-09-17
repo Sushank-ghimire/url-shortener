@@ -19,7 +19,7 @@ export async function redirect(
 export async function resolveURL(
   data: ResolveRequest,
 ): Promise<ResolveResponse> {
-  return api<ResolveResponse>(`/api/v1/url/${data.shortcode}/resolve`, {
+  return api<ResolveResponse>(`/api/v1/url/resolve/${data.shortcode}`, {
     method: "GET",
   });
 }
