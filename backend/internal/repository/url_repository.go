@@ -31,7 +31,6 @@ func (r *URLRepository) Create(
 ) error {
 	query := `
 		INSERT INTO urls (
-			id,
 			user_id,
 			short_code,
 			long_url,
@@ -39,14 +38,13 @@ func (r *URLRepository) Create(
 			expires_at,
 			custom_alias
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		VALUES ($1, $2, $3, $4, $5, NULLIF($6, ''))
 		RETURNING created_at, updated_at, expires_at
 	`
 
 	return r.db.QueryRowContext(
 		ctx,
 		query,
-		url.ID,
 		url.UserID,
 		url.ShortCode,
 		url.LongURL,
@@ -68,7 +66,7 @@ func (r *URLRepository) GetURLByShortCode(
 	var url model.Url
 
 	query := `
-			SELECT id, user_id, custom_alias, is_active, long_url, short_code FROM urls WHERE short_code = $1
+			SELECT id, user_id, COALESCE(custom_alias, ''), is_active, long_url, short_code FROM urls WHERE short_code = $1
 		`
 	err := r.db.QueryRowContext(
 		ctx,
@@ -115,7 +113,18 @@ func (r *URLRepository) GetURLsByUserId(
 	userId int64,
 ) ([]model.Url, error) {
 	query := `
-		SELECT * FROM urls WHERE user_id = $1 AND is_active = TRUE ORDER BY created_at DESC
+		SELECT
+		id,
+		user_id,
+		short_code,
+		long_url,
+		COALESCE(title, ''),
+		COALESCE(custom_alias, ''),
+		is_active,
+		expires_at,
+		created_at,
+		updated_at
+	 	FROM urls WHERE user_id = $1 AND is_active = TRUE ORDER BY created_at DESC
 	`
 
 	rows, err := r.db.QueryContext(
@@ -135,6 +144,7 @@ func (r *URLRepository) GetURLsByUserId(
 
 		err := rows.Scan(
 			&url.ID,
+			&url.UserID,
 			&url.ShortCode,
 			&url.LongURL,
 			&url.Title,
