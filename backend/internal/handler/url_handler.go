@@ -129,6 +129,40 @@ func (h *URLHandler) GetURLByID(c *gin.Context) {
 	c.Redirect(http.StatusFound, url.LongURL)
 }
 
+func (h *URLHandler) GetUserURLs(c *gin.Context) {
+	userID, ok := getUserID(c)
+	if !ok {
+		utils.Error(
+			c,
+			http.StatusUnauthorized,
+			"user not authenticated",
+		)
+		return
+	}
+
+	urls, err := h.urlService.GetUserURLs(
+		c.Request.Context(),
+		userID,
+	)
+
+	if err != nil {
+		utils.Error(
+			c,
+			http.StatusUnauthorized,
+			"failed to fetch urls",
+		)
+		return
+	}
+	utils.Success(
+		c,
+		http.StatusAccepted,
+		"",
+		gin.H{
+			"urls": urls,
+		},
+	)
+}
+
 func (h *URLHandler) ResolveURL(c *gin.Context) {
 	shortCode := c.Param("shortcode")
 	if shortCode == "" {
@@ -183,8 +217,8 @@ func (h *URLHandler) ResolveURL(c *gin.Context) {
 		gin.H{
 			"success": true,
 			"data": gin.H{
-				"exists": true,
-			"long_url": url.LongURL,
+				"exists":   true,
+				"long_url": url.LongURL,
 			},
 			"message": "url resolved successfully!",
 		},

@@ -76,15 +76,15 @@ func setupURLRoutes(
 	url := api.Group("/url")
 
 	// Public
-	url.GET("/:id", urlHandler.GetURLByID)
-	url.GET("/:shortcode/resolve", urlHandler.ResolveURL)
+	url.GET("/resolve/:shortcode", urlHandler.ResolveURL)
+	url.GET("/redirct/:id", urlHandler.GetURLByID)
 
 	// Protected
 	protected := url.Group("")
 	protected.Use(middleware.AuthRequired(jwtService))
 	{
-		protected.POST("/", urlHandler.ShortURL)
-
+		protected.POST("", urlHandler.ShortURL)
+		protected.GET("", urlHandler.GetUserURLs)
 		analytics := protected.Group("/:id/analytics")
 		{
 			analytics.GET("", analyticsHandler.GetAnalytics)
